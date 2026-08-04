@@ -1,0 +1,212 @@
+# ==========================================================
+# Assignment 2 - Diabetes Prediction using Neural Networks
+# ==========================================================
+
+# -------------------------
+# Import Required Libraries
+# -------------------------
+
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Input, Dense
+
+# ==========================================================
+# PART 1 - DATA PREPARATION
+# ==========================================================
+
+print("=" * 60)
+print("PART 1 - DATA PREPARATION")
+print("=" * 60)
+
+# Load Dataset
+df = pd.read_csv("diabetes.csv")
+
+# Dataset Summary
+print("\n1. Dataset Shape")
+print(df.shape)
+
+print("\n2. Column Names")
+print(df.columns.tolist())
+
+print("\n3. Data Types")
+print(df.dtypes)
+
+print("\n4. Missing Values")
+print(df.isnull().sum())
+
+# Feature and Target Separation
+X = df.drop("Outcome", axis=1)
+y = df["Outcome"]
+
+print("\nFeatures Shape:", X.shape)
+print("Target Shape:", y.shape)
+
+# Train Test Split
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.20,
+    random_state=42
+)
+
+print("\nTraining Data Shape:", X_train.shape)
+print("Testing Data Shape:", X_test.shape)
+
+# Feature Scaling
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+print("\nScaled Training Dataset (First 5 Rows)")
+print(X_train_scaled[:5])
+
+print("\nScaled Testing Dataset (First 5 Rows)")
+print(X_test_scaled[:5])
+
+# ==========================================================
+# PART 2 - BUILD ARTIFICIAL NEURAL NETWORK
+# ==========================================================
+
+print("\n")
+print("=" * 60)
+print("PART 2 - BUILD ANN")
+print("=" * 60)
+
+model = Sequential([
+
+    Input(shape=(8,)),      # Input Layer
+
+    Dense(
+        units=16,
+        activation="relu"
+    ),
+
+    Dense(
+        units=8,
+        activation="relu"
+    ),
+
+    Dense(
+        units=1,
+        activation="sigmoid"
+    )
+
+])
+
+model.compile(
+
+    optimizer="adam",
+
+    loss="binary_crossentropy",
+
+    metrics=["accuracy"]
+
+)
+
+print("\nANN Architecture\n")
+
+model.summary()
+
+print("\nActivation Functions Used")
+print("Hidden Layer 1 : ReLU")
+print("Hidden Layer 2 : ReLU")
+print("Output Layer   : Sigmoid")
+
+print("\nOptimizer : Adam")
+print("Loss Function : Binary Crossentropy")
+print("Metric : Accuracy")
+
+# ==========================================================
+# PART 3 - MODEL TRAINING
+# ==========================================================
+
+print("\n")
+print("=" * 60)
+print("PART 3 - MODEL TRAINING")
+print("=" * 60)
+
+history = model.fit(
+
+    X_train_scaled,
+
+    y_train,
+
+    epochs=50,
+
+    batch_size=32,
+
+    verbose=1
+
+)
+
+print("\nTraining Completed Successfully")
+
+print("\nFinal Training Accuracy :")
+
+print(f"{history.history['accuracy'][-1]*100:.2f}%")
+
+print("\nEpochs Used :")
+
+print(len(history.history["accuracy"]))
+
+# ==========================================================
+# PART 4 - MODEL EVALUATION
+# ==========================================================
+
+print("\n")
+print("=" * 60)
+print("PART 4 - MODEL EVALUATION")
+print("=" * 60)
+
+# Prediction Probabilities
+
+y_pred_probability = model.predict(X_test_scaled)
+
+# Convert Probability into Binary Labels
+
+y_pred = (y_pred_probability > 0.5).astype(int)
+
+# Accuracy
+
+accuracy = accuracy_score(y_test, y_pred)
+
+print("\nModel Accuracy")
+
+print(f"{accuracy*100:.2f}%")
+
+# Confusion Matrix
+
+cm = confusion_matrix(y_test, y_pred)
+
+print("\nConfusion Matrix")
+
+print(cm)
+
+print("\nInterpretation")
+
+print("-----------------------------")
+
+print("True Negatives :", cm[0][0])
+
+print("False Positives:", cm[0][1])
+
+print("False Negatives:", cm[1][0])
+
+print("True Positives :", cm[1][1])
+
+print("\nThe model predicts whether a patient has diabetes.")
+
+if accuracy >= 0.80:
+    print("The model achieved good prediction accuracy.")
+elif accuracy >= 0.70:
+    print("The model achieved satisfactory prediction accuracy.")
+else:
+    print("The model needs improvement.")
+
+print("\nAssignment Completed Successfully")
